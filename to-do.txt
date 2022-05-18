@@ -5,7 +5,8 @@ done! 2. stops_t ? right now a lot of stations dont have parent stations / no lo
     Maybe take shortest if loc_type not 1 or parent_stat = NULL??
     ORDER BY stop_id ASC!
 
-3. time_calculation. When the DATETIME values have not the correct format traveltime will become NULL. it often misses the first digit ( its 4:44:44 but should be 04:44:44)
+done! 3. time_calculation. When the DATETIME values have not the correct format traveltime will become NULL. it often misses the first digit ( its 4:44:44 but should be 04:44:44)
+    did a cas statement in create_db
 
 4. input makes a geographical radius and all stop_ids inside are used as starting location?
 
