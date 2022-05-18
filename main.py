@@ -3,7 +3,7 @@ start_time = time.time()
 import sqlite3
 conn = sqlite3.connect('gtfs_de.db')
 c = conn.cursor()
-
+#
 def get_stop_times_temp(input_stop_name):
     input_stop_id = c.execute("SELECT stop_id FROM stops WHERE location_type = 1 AND stop_name IS ?", [input_stop_name,]).fetchone()[0]
     input_stop_id = str(input_stop_id) + "%"
