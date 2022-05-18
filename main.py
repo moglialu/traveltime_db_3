@@ -3,9 +3,9 @@ start_time = time.time()
 import sqlite3
 conn = sqlite3.connect('gtfs_de.db')
 c = conn.cursor()
-#
+
 def get_stop_times_temp(input_stop_name):
-    input_stop_id = c.execute("SELECT stop_id FROM stops WHERE location_type = 1 AND stop_name IS ?", [input_stop_name,]).fetchone()[0]
+    input_stop_id = c.execute("SELECT stop_id FROM stops_t WHERE stop_name = ? ORDER BY stop_id ASC", [input_stop_name,]).fetchone()[0]
     input_stop_id = str(input_stop_id) + "%"
     c.execute("""CREATE TEMP TABLE routes_temp 
         AS SELECT DISTINCT route_id 
@@ -23,7 +23,7 @@ def get_stop_times_temp(input_stop_name):
 
 
 
-input_stop_name = "Freiberg (N)"
+input_stop_name = "Niederstetten, Bahnhof"
 c.execute("DROP TABLE IF EXISTS temp4")
 
 input = get_stop_times_temp(input_stop_name)
