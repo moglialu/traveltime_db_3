@@ -1,5 +1,14 @@
 1. sort and transform temp4 so it only shows fastest, also transform and save as csv for qgis
 
-2. stops_t ? right now a lot of stations dont have parent stations / no location_type. Würzburg e.g. what to use as input then??? remove last digits from stop_id?
+done! 2. stops_t ? right now a lot of stations dont have parent stations / no location_type. Würzburg e.g. what to use as input then??? remove last digits from stop_id?
+    Wü e.g. has no parent station or location_type at all
+    Maybe take shortest if loc_type not 1 or parent_stat = NULL??
+    ORDER BY stop_id ASC!
 
 3. time_calculation. When the DATETIME values have not the correct format traveltime will become NULL. it often misses the first digit ( its 4:44:44 but should be 04:44:44)
+
+4. input makes a geographical radius and all stop_ids inside are used as starting location?
+
+far away mit Umstieg!
+
+even further online!
