@@ -21,7 +21,23 @@ print("Creating new tables...")
 
 c.execute("CREATE TABLE IF NOT EXISTS routes_t AS SELECT * FROM routes WHERE route_type > 99 OR route_type < 3")
 c.execute("CREATE TABLE IF NOT EXISTS trips_t AS SELECT * FROM trips WHERE route_id IN ( SELECT route_id FROM routes_t)")
-c.execute("CREATE TABLE IF NOT EXISTS stop_times_t AS SELECT * FROM stop_times WHERE trip_id IN ( SELECT trip_id FROM trips_t)")
+
+
+c.execute("""CREATE TABLE IF NOT EXISTS stop_times_t
+    AS SELECT *, 
+    CASE WHEN  length(arrival_time) < 8 THEN '0' || arrival_time ELSE arrival_time END, 
+    CASE WHEN  length(departure_time) < 8 THEN '0' || departure_time ELSE departure_time END
+    FROM stop_times
+    WHERE trip_id 
+    IN ( SELECT trip_id FROM trips_t)""")
+c.execute("ALTER TABLE stop_times_t DROP COLUMN arrival_time")
+c.execute("ALTER TABLE stop_times_t DROP COLUMN departure_time")
+c.execute("ALTER TABLE stop_times_t DROP COLUMN pickup_type")
+c.execute("ALTER TABLE stop_times_t DROP COLUMN drop_off_type")
+c.execute("""ALTER TABLE stop_times_t RENAME "CASE WHEN  length(arrival_time) < 8 THEN '0' || arrival_time ELSE arrival_time END" TO arrival_time""")
+c.execute("""ALTER TABLE stop_times_t RENAME "CASE WHEN  length(departure_time) < 8 THEN '0' || departure_time ELSE departure_time END" TO departure_time""")
+
+
 c.execute("CREATE TEMP TABLE IF NOT EXISTS stops_t_temp AS SELECT * FROM stops WHERE stop_id IN (SELECT stop_id FROM stop_times_t)")
 c.execute("CREATE TEMP TABLE IF NOT EXISTS stops_loc1_temp AS SELECT * FROM stops WHERE location_type = 1")
 c.execute("CREATE TABLE IF NOT EXISTS stops_t AS SELECT * FROM stops_t_temp UNION SELECT * FROM stops_loc1_temp")
