@@ -23,4 +23,4 @@ c.execute("CREATE TABLE IF NOT EXISTS stop_times_t AS SELECT * FROM stop_times W
 c.execute("CREATE TABLE IF NOT EXISTS stops_t AS SELECT * FROM stops WHERE stop_id IN (SELECT stop_id FROM stop_times_t)")
 
 print("New tables were created succsessfully. Job done!")
-conn.close
+conn.close()
