@@ -1,31 +1,19 @@
+
 A = without transfer---------------------------------------------------------------------------------------------------
-A1. sort and transform temp4 so it only shows fastest, also transform and save as csv for qgis    
-    c.execute("CREATE TABLE temp5 AS SELECT *, min(timedelta) FROM temp4 GROUP BY stop_id")
+    A4. input makes a geographical radius and all stop_ids inside are used as starting location?
 
-done! A2. stops_t ? right now a lot of stations dont have parent stations / no location_type. Würzburg e.g. what to use as input then??? remove last digits from stop_id?
-    Wü e.g. has no parent station or location_type at all
-    Maybe take shortest if loc_type not 1 or parent_stat = NULL??
-    ORDER BY stop_id ASC!
+    A.5 compare with https://direkt.bahn.guru (e.g. niederstetten)
 
-done! A3. time_calculation. When the DATETIME values have not the correct format traveltime will become NULL. it often misses the first digit ( its 4:44:44 but should be 04:44:44)
-    did a cas statement in create_db
+    A.6 Bugfix for start_time after 24:00:00
 
-A4. input makes a geographical radius and all stop_ids inside are used as starting location?
+    A.7 Change symbology
+
+    A.8 Revise create_db.py
+
+    A.9 Outsource Functions
 
 B = Transfer / Second Loop-----------------------------------------------------------------------------------------------------------
-B1. add max_transfer_waiting_time
+    B.1 Make it faster
+    B.2 Implement the correct days of service
 
-B2. select only the first trip (in every direction?) of every route in waiting time
-
-B3. Calculate and add to result of first loop 
-
-Bx. Delete stations allready reached in first loop ?
-
-B4. Add variable transfertime
-
-
-
-
-
-
-x = even further: make it online!-------------------------------------------------------------------------------------
+x = even further: make it online/html/javascript!-------------------------------------------------------------------------------------
