@@ -1,55 +1,70 @@
 import time
 start_time = time.time()
+import folium
+import pandas as pd
 import sqlite3
+import numpy as np
 conn = sqlite3.connect('gtfs_de.db')
 c = conn.cursor()
 
-def get_stop_times_temp(input_stop_name):
-    input_stop_id = c.execute("SELECT stop_id FROM stops_t WHERE stop_name = ? ORDER BY stop_id ASC", [input_stop_name,]).fetchone()[0]
-    input_stop_id = str(input_stop_id) + "%"
-    c.execute("""CREATE TEMP TABLE routes_temp 
-        AS SELECT DISTINCT route_id 
-        FROM trips_t 
-        WHERE trip_id IN
-            (SELECT trip_id FROM stop_times_t WHERE stop_id LIKE ? )""", (input_stop_id,),).fetchall()
-            #make table down a temporary one
-    print (input_stop_id)
-    c.execute("""CREATE  TEMP TABLE stop_times_temp 
-        AS SELECT * 
-        FROM stop_times_t 
-        WHERE trip_id IN 
-            (SELECT trip_id FROM trips_t WHERE route_id IN routes_temp)""") #alle trips der routen die durch x verlaufen
-    return input_stop_id
+#functions---------------------------------
+def write_csv():
+    c.execute("SELECT stop_name, stop_lat, stop_lon, timedelta FROM results_fastest")
+    col_name_list = [tuple[0] for tuple in c.description]
+    c.execute("SELECT stop_name, stop_lat, stop_lon, timedelta FROM results_fastest")
+    result = c.fetchall()
+    df = pd.DataFrame(result, columns = col_name_list)
+    df.columns.str.strip()
+    df.to_csv('results_csv/map_csv',',', conn)
 
 
+def get_traveltime_1(stop_name): 
+    c.execute("""CREATE TEMP TABLE start_temp AS SELECT trip_id, departure_time as start_time, stop_sequence as start_sequence FROM traveltime WHERE stop_name = ?""", (stop_name,)) 
+    c.execute("""   
+    INSERT INTO results SELECT *, ROUND((JULIANDAY(arrival_time) - JULIANDAY(start_time)) * 1440) AS timedelta 
+        FROM traveltime INNER JOIN start_temp USING (trip_id) WHERE trip_id IN (SELECT trip_id FROM start_temp) AND stop_sequence > start_sequence;
+    """)
+    c.execute("""CREATE TABLE results_fastest AS SELECT *, min(timedelta) FROM results GROUP BY stop_name """)
+    c.execute("""UPDATE results_fastest SET timedelta = 0 WHERE timedelta IS NULL""")#  temporary: start_time after 24:00:00 results in NULL and gives an error when convert to float with pandas
+ 
 
-input_stop_name = "Niederstetten, Bahnhof"
-input_max_transfer_time = 30.0
-input_max_transfer_number = 1
-c.execute("DROP TABLE IF EXISTS temp4")
-c.execute("DROP TABLE IF EXISTS temp5")
-c.execute("DROP TABLE IF EXISTS temp5")
-c.execute("DROP TABLE IF EXISTS temp6")
+        
+#user input-------------------------------------
+input_location = 'Würzburg Hbf'
+print('Starting...')
+
+#reading database-------------------------------
+c.execute("DROP TABLE IF EXISTS results")
+c.execute("DROP TABLE IF EXISTS results_fastest")
+c.execute("CREATE TABLE results (trip_id, stop_id, stop_sequence, arrival_time, departure_time, route_id, direction_id, stop_name, stop_lat, stop_lon, route_count, start_time, start_sequence, timedelta)")
+
+get_traveltime_1(input_location)
+write_csv()
+print("List created.", time.time() - start_time,)
+
+#mapping-----------------------------------------
+map = folium.Map( location = [50.015, 10.067], zoom_start = 7 )
+stops = pd.read_csv('results_csv/map_csv')
+stops['timedelta'].astype(str).astype(float)
+stops.loc[stops['timedelta'] == 0, 'color'] = 'gray'
+stops.loc[(stops['timedelta'] > 0) & (stops['timedelta'] <= 15), 'color'] = 'lightgreen'
+stops.loc[(stops['timedelta'] > 15) & (stops['timedelta'] <= 30), 'color'] = 'green'
+stops.loc[(stops['timedelta'] > 30) & (stops['timedelta'] <= 60), 'color'] = 'darkgreen'
+stops.loc[(stops['timedelta'] > 60) & (stops['timedelta'] <= 120), 'color'] = 'beige'
+stops.loc[(stops['timedelta'] > 120) & (stops['timedelta'] <= 240), 'color'] = 'lightred'
+stops.loc[(stops['timedelta'] > 240) & (stops['timedelta'] <= 360), 'color'] = 'red'
+stops.loc[stops['timedelta'] > 360, 'color'] = 'darkred'
 
 
-input = get_stop_times_temp(input_stop_name)
-print(input)
-
-c.execute("CREATE TEMP TABLE temp2 AS SELECT trip_id, departure_time, stop_sequence FROM stop_times_temp WHERE stop_id LIKE ?", (input,))
-c.execute("ALTER TABLE temp2 RENAME COLUMN departure_time TO start_time")
-c.execute("ALTER TABLE temp2 RENAME COLUMN stop_sequence TO start_stop_sequence")
-c.execute("CREATE TEMP TABLE temp3 AS SELECT * FROM stop_times_temp INNER JOIN temp2 USING (trip_id)")
-c.execute("DELETE FROM temp3 WHERE stop_sequence < start_stop_sequence")
-c.execute("""CREATE TABLE temp4 AS SELECT *, ROUND((JULIANDAY(arrival_time) - JULIANDAY(start_time)) * 1440) AS timedelta FROM temp3 """)
-
-c.execute("CREATE TABLE temp5 AS SELECT * FROM temp4 INNER JOIN stops_t USING (stop_id)")
-
-
-#this happens after transfers
-# c.execute("CREATE TABLE temp5 AS SELECT *, min(timedelta) FROM temp4 GROUP BY stop_id")
-
-
-
+for _, stop in stops.iterrows():
+    folium.Marker(
+        location = [stop['stop_lat'], stop ['stop_lon']],
+        popup=stop['stop_name'] + ", Time: " + str(stop ['timedelta']),
+        tooltip= stop['stop_name'] + ", Time: " + str(stop ['timedelta']),
+        icon=folium.Icon(color=stop['color'])
+    ).add_to(map)
+map.save('map.html')
+print("Map created. Open 'map.html'.", time.time() - start_time)
 
 
 conn.commit()

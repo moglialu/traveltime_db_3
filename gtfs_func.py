@@ -85,6 +85,71 @@ def search_completion(input):
     for y in proposal.fetchall():
         print(y)
 
-       
+def write_csv():
+    c.execute("SELECT stop_name, stop_lat, stop_lon, timedelta FROM results1")
+    col_name_list = [tuple[0] for tuple in c.description]
+    print(col_name_list)
+    c.execute("SELECT stop_name, stop_lat, stop_lon, timedelta FROM results1")
+    result = c.fetchall()
+
+    df = pd.DataFrame(result, columns = col_name_list)
+    print(df)
+    df.columns.str.strip()
+    df.to_csv('Stuttgart_Oben_1t',',', conn)       
 
 
+
+    def get_traveltimel1(stop_name):
+    c.execute("CREATE TEMP TABLE start_temp AS SELECT trip_id, departure_time as start_time, stop_sequence as start_sequence FROM traveltime2 WHERE stop_name = ?", (stop_name,))
+    c.execute("CREATE INDEX start_temp_index ON start_temp (trip_id, start_sequence)")
+
+    c.execute("CREATE TEMP TABLE sel_temp AS SELECT * FROM traveltime2 INNER JOIN start_temp USING (trip_id) WHERE trip_id IN (SELECT trip_id FROM start_temp) AND stop_sequence > start_sequence")
+    c.execute("ALTER TABLE sel_temp ADD COLUMN timedelta DATETIME")
+    c.execute("UPDATE sel_temp SET timedelta = ROUND((JULIANDAY(arrival_time) - JULIANDAY(start_time)) * 1440)")
+    c.execute("CREATE TEMP TABLE sel_temp2 AS SELECT *, min(timedelta) FROM sel_temp GROUP BY stop_name")
+    c.execute("ALTER TABLE sel_temp2 DROP COLUMN 'min(timedelta)'")
+    c.execute("INSERT INTO results SELECT * FROM sel_temp2")
+
+    c.execute("DROP TABLE IF EXISTS start_temp")
+    c.execute("DROP TABLE IF EXISTS sel_temp")
+    c.execute("DROP TABLE IF EXISTS sel_temp2")
+    print("loop1", time.time() - start_time)
+
+def get_traveltimel2(stop_name, old_time):
+    c.execute("CREATE TEMP TABLE start_temp AS SELECT trip_id, departure_time as start_time, stop_sequence as start_sequence FROM traveltime3 WHERE stop_name = ?", (stop_name,))
+    c.execute("CREATE INDEX start_temp_index ON start_temp (trip_id, start_sequence)")
+
+    c.execute("""CREATE TEMP TABLE sel_temp AS SELECT * FROM traveltime3 INNER JOIN start_temp USING (trip_id) 
+        WHERE trip_id IN (SELECT trip_id FROM start_temp) AND stop_sequence > start_sequence AND route_id NOT IN (SELECT route_id FROM results)""")
+    c.execute("ALTER TABLE sel_temp ADD COLUMN timedelta DATETIME")
+    c.execute("UPDATE sel_temp SET timedelta = ROUND((JULIANDAY(arrival_time) - JULIANDAY(start_time)) * 1440 + ?)", (old_time,))
+    c.execute("CREATE TEMP TABLE sel_temp2 AS SELECT *, min(timedelta) FROM sel_temp GROUP BY stop_name")
+    c.execute("ALTER TABLE sel_temp2 DROP COLUMN 'min(timedelta)'")
+    c.execute("INSERT INTO results SELECT * FROM sel_temp2")
+
+    c.execute("DROP TABLE IF EXISTS start_temp")
+    c.execute("DROP TABLE IF EXISTS sel_temp")
+    c.execute("DROP TABLE IF EXISTS sel_temp2")
+    print("loop2", time.time() - start_time)
+
+
+def get_one_later(arrival_time):
+    c.execute("""SELECT *, min(departure_time)
+    FROM traveltime 
+    WHERE stop_name = 'Backnang' AND departure_time > '00:52:00'
+    GROUP BY route_id;""")    
+
+#    for b in data_b.fetchal():
+#         c.execute("INSERT INTO results SELECT *, FROM traveltime2 WHERE trip_id = ? AND stop_sequence > ?", ([b[0],b[2]],))       
+# 
+# 
+#  query = """INSERT INTO "users" ("userID", "email", "forename", "surname") 
+#            VALUES
+#            (?, ?, ?, ?)
+#         """
+# user_list = ((1, 'user1@example.com', 'Test', 'User'), (2, 'user2@example.com', 'Test', 'User'))
+# cursor.executemany("INSERT INTO myTable(data) values (?) ", user_list) 
+
+
+# curs.execute("SELECT weight FROM Equipment WHERE name = :name AND price = :price",
+#              {name: 'lead', price: 24})
