@@ -3,6 +3,9 @@ start_time = time.time()
 import pandas as pd
 import os
 import sqlite3
+
+
+os.remove("gtfs_de.db") 
 conn = sqlite3.connect('gtfs_de.db')
 c = conn.cursor()
 conn.commit()
@@ -68,6 +71,7 @@ c.execute("DROP TABLE IF EXISTS stop_times")
 c.execute("DROP TABLE IF EXISTS stops")
 c.execute("DROP TABLE IF EXISTS transfers")
 c.execute("DROP TABLE IF EXISTS trips")
+
 
 print("New tables were created succsessfully. Job done!")
 
