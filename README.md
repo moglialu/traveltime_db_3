@@ -16,7 +16,7 @@ Dependencies:
 *Language used: Python / SQL
 *Modules used: pandas sqlite3 folium time
 *Data: gtfs
-In this repository there is a sample dataset for Frankfurt, Stuttgart and Niederstetten. For the whole of germany visit [opendata-oepnv.de](https://www.opendata-oepnv.de/ht/de/willkommen).
+In this repository there is a sample dataset for Frankfurt, Stuttgart and Niederstetten. For the whole of germany visit [opendata-oepnv.de]([https://www.opendata-oepnv.de/ht/de/willkommen](https://www.opendata-oepnv.de/ht/de/organisation/delfi/startseite?tx_vrrkit_view%5Bdataset_name%5D=deutschlandweite-sollfahrplandaten-gtfs&tx_vrrkit_view%5Baction%5D=details&tx_vrrkit_view%5Bcontroller%5D=View)).
 
 How to use?
 1. Run main.py
@@ -24,7 +24,7 @@ How to use?
 3. Open map.html
 
 To implement gtfs for all Germany:
-1. Download gtfs data from [opendata-oepnv.de](https://www.opendata-oepnv.de/ht/de/willkommen)
+1. Download gtfs data from [opendata-oepnv.de]([https://www.opendata-oepnv.de/ht/de/willkommen](https://www.opendata-oepnv.de/ht/de/organisation/delfi/startseite?tx_vrrkit_view%5Bdataset_name%5D=deutschlandweite-sollfahrplandaten-gtfs&tx_vrrkit_view%5Baction%5D=details&tx_vrrkit_view%5Bcontroller%5D=View))
 2. Place routes.txt, stop_times.txt, stops.txt, trips.txt into the gtfs/ Folder
 3. Run create_db.py
 
