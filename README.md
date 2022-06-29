@@ -9,13 +9,13 @@ A traveltime-map shows you which destinations you can reach from a given startin
 It should also give you the minimum time you need for the journey. 
 Its not like the routing from google maps because its not a 1 to 1 search, but a 1 to n. 
 
-For germany there is already [this realy nice page] (https://direkt.bahn.guru) which does basicly what this code is supposed to do. 
+For germany there is already this realy nice page (https://direkt.bahn.guru) which does basicly what this code is supposed to do. 
 I found this site while already coding.
 
 Dependencies:
-Language used: Python / SQL
-Modules used: pandas sqlite3 folium time
-Data: gtfs
+*Language used: Python / SQL
+*Modules used: pandas sqlite3 folium time
+*Data: gtfs
 In this repository there is a sample dataset for Frankfurt, Stuttgart and Niederstetten. For the whole of germany visit [opendata-oepnv.de](https://www.opendata-oepnv.de/ht/de/willkommen).
 
 How to use?
